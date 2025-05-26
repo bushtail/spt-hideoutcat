@@ -41,7 +41,7 @@ namespace hideoutcat.bepinex
                 { 
                     cat.Pet();
                     owner.Player.SetInteractInHands(EInteraction.ContainerOpenDefault);
-                    owner.ClearInteractionState();
+                    owner.InteractionsChangedHandler();
                 }),
                 Disabled = !cat.IsPettable()
             });
@@ -52,7 +52,7 @@ namespace hideoutcat.bepinex
                 Action = new Action(delegate 
                 { 
                     cat.WakeUp();
-                    owner.ClearInteractionState();
+                    owner.InteractionsChangedHandler();
                 }),
                 Disabled = !cat.IsSleeping()
             });
