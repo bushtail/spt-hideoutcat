@@ -1299,7 +1299,7 @@
     },
     "connectedTo": [
       "e107_WaterCollector_L3",
-      "a16b_WaterCollector_L3"
+      "a16b_WaterCollector_L3_POSE"
     ],
     "forwardJump": true,
     "areaType": "WaterCollector",
@@ -1361,11 +1361,11 @@
     "pose": "None"
   },
   {
-    "name": "a16b_WaterCollector_L3",
+    "name": "a16b_WaterCollector_L3_POSE",
     "position": {
-      "x": 4.521,
+      "x": 4.691,
       "y": 1.709,
-      "z": -1.072
+      "z": -1.002
     },
     "connectedTo": [
       "0d5b_WaterCollector_L3"
@@ -1373,8 +1373,8 @@
     "forwardJump": false,
     "areaType": "WaterCollector",
     "areaLevel": 3,
-    "poseRotation": 0.0,
-    "pose": "None"
+    "poseRotation": 106.1643,
+    "pose": "Sitting"
   },
   {
     "name": "e508_WaterCollector_L2",
