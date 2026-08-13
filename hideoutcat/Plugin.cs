@@ -41,7 +41,9 @@ public class Plugin : BaseUnityPlugin
         InitConfiguration();
 
         if (!LoadCatAreaData())
+        {
             return;
+        }
 
         new HideoutAwakePatch().Enable();
         new SelectAreaPatch().Enable();
@@ -166,12 +168,14 @@ public class Plugin : BaseUnityPlugin
         var prefab = bundle?.LoadAsset<GameObject>("hideoutcat");
 
         var catObj = Instantiate(prefab);
-        if (catObj == null)
+        if (!catObj)
+        {
             throw new NullReferenceException();
+        }
 
-        BundleLoader.ReplaceShadersToNative(catObj);
+        BundleLoader.ReplaceShadersToNative(catObj!);
 
-        var renderer = catObj.GetComponentInChildren<SkinnedMeshRenderer>();
+        var renderer = catObj!.GetComponentInChildren<SkinnedMeshRenderer>();
         renderer.materials[1].color = _eyeColor!.Value;
 
         if (_coat!.Value != (ECatCoat)_coat.DefaultValue)
@@ -179,7 +183,7 @@ public class Plugin : BaseUnityPlugin
             var texName = "MAINTEX_" + _coat.Value.ToString().ToUpper();
             var coatTex = bundle?.LoadAsset<Texture2D>(texName);
 
-            if (coatTex != null)
+            if (coatTex)
             {
                 renderer.materials[0].mainTexture = coatTex;
             }
