@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Comfort.Common;
 using EFT;
 using EFT.CameraControl;
@@ -221,11 +222,17 @@ public class Cat : InteractableObject
         SetState(ECatState.Idle, false);
     }
 
+    /**
+     * I tried to make this function more performant, but
+     * BSG has decided that I must always re-cache the player
+     * camera when exiting and re-entering the hideout.
+     */
+    [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeCameraMain")]
     private Transform GetPlayerCam()
     {
         if (!_playerCam)
         {
-            _playerCam = _camera;
+            _playerCam = Camera.main;
         }
         return _playerCam!.transform;
     }

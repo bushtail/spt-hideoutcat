@@ -23,7 +23,7 @@ using Random = UnityEngine.Random;
 
 namespace HideoutCat;
 
-[BepInPlugin("com.tarkin.hideoutcat", "hideoutcat", "1.1.0")]
+[BepInPlugin("com.tarkin.hideoutcat", "hideoutcat", "1.1.1")]
 public class Plugin : BaseUnityPlugin
 {
     private static ConfigEntry<ECatCoat>? _coat;
