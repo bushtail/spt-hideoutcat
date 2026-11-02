@@ -28,6 +28,9 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
+# AssetBundleLoader build output
+/AssetBundleLoader/bin/
+/AssetBundleLoader/obj/
 [Ll]og/
 
 # Rider specific
