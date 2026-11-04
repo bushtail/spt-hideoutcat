@@ -22,7 +22,6 @@ public class CatLookAt : MonoBehaviour
 
     private void Start()
     {
-        _cameraMain = Camera.main;
         Init();
     }
 
@@ -58,6 +57,16 @@ public class CatLookAt : MonoBehaviour
         _constraintHead.minAngleLimits = new Vector3(-40f, -20f, -20f);
     }
 
+    private Transform? PlayerCamera()
+    {
+        if (!_cameraMain)
+        {
+            _cameraMain = Camera.main;
+        }
+
+        return _cameraMain ? _cameraMain!.transform : null;
+    }
+
     public void LookAt(Vector3 worldPos)
     {
         if (!_targetLookAtDummy)
@@ -80,16 +89,18 @@ public class CatLookAt : MonoBehaviour
 
     public void SetLookAtPlayer()
     {
-        if (_cameraMain)
+        var cam = PlayerCamera();
+        if (cam)
         {
-            SetLookTarget(_cameraMain!.transform);
+            SetLookTarget(cam);
         }
     }
 
     public bool IsLookingAtPlayer()
     {
-        if (!_constraintNeck || !_cameraMain) { return false; }
+        var cam = PlayerCamera();
+        if (!_constraintNeck || !cam) { return false; }
 
-        return _constraintNeck!.targetLookAt == _cameraMain!.transform;
+        return _constraintNeck!.targetLookAt == cam;
     }
 }
