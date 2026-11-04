@@ -45,7 +45,7 @@ public class CatLookAt : MonoBehaviour
         _constraintNeck.bone = neck;
         _constraintNeck.weight = 0.6f;
         _constraintNeck.RotationOffsetEuler = new Vector3(-15f, 0f, 0f);
-        _constraintNeck.customUpVector = Vector3.up;
+        _constraintNeck.customUpVector = Vector3.zero;
         _constraintNeck.useAngleLimits = true;
         _constraintNeck.maxAngleLimits = new Vector3(80f, NeckYawLimit, 20f);
         _constraintNeck.minAngleLimits = new Vector3(-50f, -NeckYawLimit, -20f);
@@ -54,7 +54,7 @@ public class CatLookAt : MonoBehaviour
         _constraintHead.bone = head;
         _constraintHead.weight = 1f;
         _constraintHead.RotationOffsetEuler = new Vector3(-15f, 0f, 0f);
-        _constraintHead.customUpVector = Vector3.up;
+        _constraintHead.customUpVector = Vector3.zero;
         _constraintHead.useAngleLimits = true;
         _constraintHead.maxAngleLimits = new Vector3(80f, HeadYawLimit, 20f);
         _constraintHead.minAngleLimits = new Vector3(-40f, -HeadYawLimit, -20f);
