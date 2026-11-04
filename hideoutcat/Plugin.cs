@@ -162,8 +162,6 @@ public class Plugin : BaseUnityPlugin
         if (!RequirementsMet())
             return;
 
-        _catSpawned = true;
-
         var bundle = BundleLoader.LoadAssetBundle("hideoutcat");
         var prefab = bundle?.LoadAsset<GameObject>("hideoutcat");
 
@@ -172,6 +170,8 @@ public class Plugin : BaseUnityPlugin
         {
             throw new NullReferenceException();
         }
+
+        _catSpawned = true;
 
         BundleLoader.ReplaceShadersToNative(catObj!);
 
