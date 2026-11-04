@@ -28,8 +28,8 @@ public class CatGraphTraverser : MonoBehaviour
     private float _prevDistToDest;
     private float _jumpUpEndOffset = -0.5f;
 
-    private Vector3 Velocity { get; set; }
-    public float VelocityMagnitude => Velocity.magnitude / Time.deltaTime;
+    private float _speed;
+    public float VelocityMagnitude => _speed;
     public float DeltaY { get; private set; }
 
     private static Graph? PathfindingGraph => Plugin.CatGraph;
@@ -127,7 +127,12 @@ public class CatGraphTraverser : MonoBehaviour
 
     private void LateUpdate()
     {
-        Velocity = transform.position - _prevPos;
+        var dt = Time.deltaTime;
+        if (dt > 0f)
+        {
+            var frameSpeed = (transform.position - _prevPos).magnitude / dt;
+            _speed = Mathf.Lerp(_speed, frameSpeed, 1f - Mathf.Exp(-10f * dt));
+        }
         _prevPos = transform.position;
 
         if (currentPath == null || currentPath.Count == 0)
