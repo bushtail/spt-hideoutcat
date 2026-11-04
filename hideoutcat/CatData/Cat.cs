@@ -459,8 +459,11 @@ public class Cat : InteractableObject
     {
         if (_catGraphTraverser!.HasDestination)
         {
-            ResetAnimatorParams();
-            _currentState = ECatState.Moving;
+            if (_currentState != ECatState.Moving)
+            {
+                ResetAnimatorParams();
+                _currentState = ECatState.Moving;
+            }
             return;
         }
 
