@@ -208,7 +208,6 @@ public class Plugin : BaseUnityPlugin
         {
             Log!.LogInfo($"{availableAreas.Count} avaiable areas");
 
-            Random.InitState((int)DateTime.Now.Ticks);
             for (var i = availableAreas.Count - 1; i > 0; i--)
             {
                 var j = Random.Range(0, i + 1);
