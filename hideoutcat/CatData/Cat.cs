@@ -228,13 +228,13 @@ public class Cat : InteractableObject
      * camera when exiting and re-entering the hideout.
      */
     [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeCameraMain")]
-    private Transform GetPlayerCam()
+    private Transform? GetPlayerCam()
     {
         if (!_playerCam)
         {
             _playerCam = Camera.main;
         }
-        return _playerCam!.transform;
+        return _playerCam ? _playerCam!.transform : null;
     }
     
     public void SetTargetNode(Node node)
@@ -677,7 +677,8 @@ public class Cat : InteractableObject
     
     private float DistanceToPlayer()
     {
-        return Vector3.Distance(transform.position, GetPlayerCam().position);
+        var cam = GetPlayerCam();
+        return cam ? Vector3.Distance(transform.position, cam!.position) : float.PositiveInfinity;
     }
     
     private void HandlePlayerInteraction()
@@ -724,11 +725,13 @@ public class Cat : InteractableObject
     
     private bool IsPlayerInTheWay()
     {
-        if (Singleton<GameWorld>.Instance.MainPlayer.PointOfView > 0) { return false; }
+        var player = _owner ? _owner!.Player : null;
+        var cam = GetPlayerCam();
+        if (!player || !cam || player!.PointOfView > 0) { return false; }
 
-        var distance = Vector3.Distance(GetPlayerCam().position, transform.position);
+        var distance = Vector3.Distance(cam!.position, transform.position);
 
-        var dir = (GetPlayerCam().position - transform.position).normalized;
+        var dir = (cam.position - transform.position).normalized;
         dir.y = 0f;
 
         var angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
