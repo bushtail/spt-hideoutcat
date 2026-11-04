@@ -425,7 +425,11 @@ public class Cat : InteractableObject
             case ECatState.WaitingByDoor:
             {
                 _animator!.SetBool(Sitting, true);
-                _lookAt!.SetLookTarget(_catGraphTraverser!.DoorInTheWay!.transform.parent);
+                var door = _catGraphTraverser!.DoorInTheWay;
+                if (door)
+                {
+                    _lookAt!.SetLookTarget(door!.transform.parent);
+                }
                 break;
             }
 
@@ -438,13 +442,17 @@ public class Cat : InteractableObject
             case ECatState.Idle:
             case ECatState.Moving:
             case ECatState.Sharpening:
+            {
+                break;
+            }
+
             default:
             {
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
             }
         }
 
-        _animator.Update(0f);
+        _animator!.Update(0f);
     }
 
     private void HandleState()
