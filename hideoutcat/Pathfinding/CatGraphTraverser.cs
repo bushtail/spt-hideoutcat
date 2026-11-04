@@ -266,44 +266,23 @@ public class CatGraphTraverser : MonoBehaviour
 
     private float ComputeThrust(float angle, float dist)
     {
-        var thrust = 1f;
-
         if (Mathf.Abs(angle) > 20f && dist < 0.5f)
             return 0f;
 
-        if (!(Mathf.Abs(angle) < 30f)) { return thrust; }
+        var thrust = 1f;
+
+        if (Mathf.Abs(angle) >= 30f) { return thrust; }
 
         for (var i = _currentPathIndex; i < currentPath!.Count; i++)
         {
             var distance = Vector3.Distance(transform.position, currentPath[i].position);
 
-            switch (distance)
-            {
-                case <= 3f:
-                {
-                    thrust = Mathf.Max(thrust, 1f);
-                    break;
-                }
-                case <= 6f:
-                {
-                    thrust = Mathf.Max(thrust, 1.66f);
-                    break;
-                }
-                case <= 8f:
-                {
-                    thrust = Mathf.Max(thrust, 2.55f);
-                    break;
-                }
-                default:
-                {
-                    if (Mathf.Abs(angle) < 5f)
-                    {
-                        thrust = Mathf.Max(thrust, 3.6f);
-                    }
-
-                    break;
-                }
-            }
+            if (distance > 8f && Mathf.Abs(angle) < 5f)
+                thrust = Mathf.Max(thrust, 3.6f);
+            else if (distance > 6f)
+                thrust = Mathf.Max(thrust, 2.55f);
+            else if (distance > 3f)
+                thrust = Mathf.Max(thrust, 1.66f);
         }
 
         return thrust;
