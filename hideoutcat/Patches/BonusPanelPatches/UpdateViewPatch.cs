@@ -9,6 +9,10 @@ namespace HideoutCat.Patches.BonusPanelPatches;
 
 public class UpdateViewPatch : ModulePatch
 {
+    private static readonly FieldInfo? BonusField = AccessTools.Field(typeof(BonusPanel), "_bonus");
+    private static readonly FieldInfo? DescField = AccessTools.Field(typeof(BonusPanel), "_description");
+    private static readonly FieldInfo? EffectField = AccessTools.Field(typeof(BonusPanel), "_effect");
+
     protected override MethodBase GetTargetMethod()
     {
         return AccessTools.Method(typeof(BonusPanel), nameof(BonusPanel.UpdateView));
@@ -17,13 +21,9 @@ public class UpdateViewPatch : ModulePatch
     [PatchPostfix]
     private static void Postfix(BonusPanel __instance)
     {
-        var bonusField = AccessTools.Field(typeof(BonusPanel), "_bonus");
-        var descField = AccessTools.Field(typeof(BonusPanel), "_description");
-        var effectField = AccessTools.Field(typeof(BonusPanel), "_effect");
-
-        var bonus = bonusField?.GetValue(__instance) as Bonus;
-        var description = descField?.GetValue(__instance) as TextMeshProUGUI;
-        var effect = effectField?.GetValue(__instance) as TextMeshProUGUI;
+        var bonus = BonusField?.GetValue(__instance) as Bonus;
+        var description = DescField?.GetValue(__instance) as TextMeshProUGUI;
+        var effect = EffectField?.GetValue(__instance) as TextMeshProUGUI;
 
         if (bonus == null || !description || !effect) { return; }
 
