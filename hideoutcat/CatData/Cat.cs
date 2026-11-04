@@ -228,13 +228,13 @@ public class Cat : InteractableObject
      * camera when exiting and re-entering the hideout.
      */
     [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeCameraMain")]
-    private Transform GetPlayerCam()
+    private Transform? GetPlayerCam()
     {
         if (!_playerCam)
         {
             _playerCam = Camera.main;
         }
-        return _playerCam!.transform;
+        return _playerCam ? _playerCam!.transform : null;
     }
     
     public void SetTargetNode(Node node)
@@ -374,8 +374,7 @@ public class Cat : InteractableObject
     
     public bool IsPettable()
     {
-        var currentState = _currentState;
-        return currentState == ECatState.Idle || currentState - ECatState.Sitting <= 1;
+        return _currentState is ECatState.Idle or ECatState.Sitting or ECatState.Lying;
     }
     
     private void SetState(ECatState newState, bool applyAnimatorParams)
@@ -384,7 +383,6 @@ public class Cat : InteractableObject
 
         _prevState = _currentState;
         _currentState = newState;
-        _owner!.InteractionsChangedHandler();
 
         if (!applyAnimatorParams) { return; }
 
@@ -426,7 +424,11 @@ public class Cat : InteractableObject
             case ECatState.WaitingByDoor:
             {
                 _animator!.SetBool(Sitting, true);
-                _lookAt!.SetLookTarget(_catGraphTraverser!.DoorInTheWay!.transform.parent);
+                var door = _catGraphTraverser!.DoorInTheWay;
+                if (door)
+                {
+                    _lookAt!.SetLookTarget(door!.transform.parent);
+                }
                 break;
             }
 
@@ -439,21 +441,28 @@ public class Cat : InteractableObject
             case ECatState.Idle:
             case ECatState.Moving:
             case ECatState.Sharpening:
+            {
+                break;
+            }
+
             default:
             {
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
             }
         }
 
-        _animator.Update(0f);
+        _animator!.Update(0f);
     }
 
     private void HandleState()
     {
         if (_catGraphTraverser!.HasDestination)
         {
-            ResetAnimatorParams();
-            _currentState = ECatState.Moving;
+            if (_currentState != ECatState.Moving)
+            {
+                ResetAnimatorParams();
+                _currentState = ECatState.Moving;
+            }
             return;
         }
 
@@ -670,7 +679,8 @@ public class Cat : InteractableObject
     
     private float DistanceToPlayer()
     {
-        return Vector3.Distance(transform.position, GetPlayerCam().position);
+        var cam = GetPlayerCam();
+        return cam ? Vector3.Distance(transform.position, cam!.position) : float.PositiveInfinity;
     }
     
     private void HandlePlayerInteraction()
@@ -710,18 +720,29 @@ public class Cat : InteractableObject
             SetState(ECatState.Sitting, true);
         }
     }
-    private static bool IsPlayerShiningFlashlightAtFace()
+    private bool IsPlayerShiningFlashlightAtFace()
     {
-        return CameraManager.Instance != null && CameraManager.Instance.Flashlight && CameraManager.Instance.Flashlight.IsActive;
+        var flashlight = CameraManager.Instance != null ? CameraManager.Instance.Flashlight : null;
+        if (!flashlight || !flashlight!.IsActive) { return false; }
+
+        var cam = GetPlayerCam();
+        if (!cam) { return false; }
+
+        var toCat = transform.position + Vector3.up * 0.2f - cam!.position;
+        if (toCat.sqrMagnitude > 6f * 6f) { return false; }
+
+        return Vector3.Angle(cam.forward, toCat) < 25f;
     }
     
     private bool IsPlayerInTheWay()
     {
-        if (Singleton<GameWorld>.Instance.MainPlayer.PointOfView > 0) { return false; }
+        var player = _owner ? _owner!.Player : null;
+        var cam = GetPlayerCam();
+        if (!player || !cam || player!.PointOfView > 0) { return false; }
 
-        var distance = Vector3.Distance(GetPlayerCam().position, transform.position);
+        var distance = Vector3.Distance(cam!.position, transform.position);
 
-        var dir = (GetPlayerCam().position - transform.position).normalized;
+        var dir = (cam.position - transform.position).normalized;
         dir.y = 0f;
 
         var angle = Vector3.SignedAngle(transform.forward, dir, Vector3.up);
@@ -749,8 +770,7 @@ public class Cat : InteractableObject
     
     private bool IsBusy()
     {
-        var currentState = _currentState;
-        return currentState - ECatState.Sleeping <= 2;
+        return _currentState is ECatState.Sleeping or ECatState.Eating or ECatState.Defecating;
     }
     
     private void GoToRandomArea()

@@ -74,18 +74,18 @@ public class BoneLookAt : MonoBehaviour
             _wasTargetNotNull = true;
 
             var lookPos = targetLookAt!.position + targetOffset;
-            var up = customUpVector == Vector3.zero ? bone!.up : customUpVector;
 
-            var worldRot = Quaternion.LookRotation(lookPos - bone!.position, up);
+            var animatedFace = bone!.rotation * Quaternion.Inverse(_rotationOffset);
+            var up = customUpVector == Vector3.zero ? animatedFace * Vector3.up : customUpVector;
 
-            var localRot = bone.parent ? Quaternion.Inverse(bone.parent.rotation) * worldRot : worldRot;
-
-            localRot *= _rotationOffset;
-
+            var lookDir = lookPos - bone.position;
             if (useAngleLimits)
             {
-                localRot = ClampRotation(localRot);
+                lookDir = ClampDirection(animatedFace * Vector3.forward, lookDir);
             }
+
+            var worldRot = Quaternion.LookRotation(lookDir, up) * _rotationOffset;
+            var localRot = bone.parent ? Quaternion.Inverse(bone.parent.rotation) * worldRot : worldRot;
 
             _targetRotation = localRot;
         }
@@ -106,19 +106,23 @@ public class BoneLookAt : MonoBehaviour
         );
     }
 
-    private Quaternion ClampRotation(Quaternion targetRotation)
+    private Vector3 ClampDirection(Vector3 referenceForward, Vector3 desired)
     {
-        var e = targetRotation.eulerAngles;
+        YawPitch(referenceForward, out var refYaw, out var refPitch);
+        YawPitch(desired, out var yaw, out var pitch);
 
-        e.x = NormalizeAngle(e.x);
-        e.y = NormalizeAngle(e.y);
-        e.z = NormalizeAngle(e.z);
+        var yawDelta = Mathf.Clamp(Mathf.DeltaAngle(refYaw, yaw), minAngleLimits.y, maxAngleLimits.y);
+        var pitchDelta = Mathf.Clamp(pitch - refPitch, minAngleLimits.x, maxAngleLimits.x);
 
-        e.x = Mathf.Clamp(e.x, minAngleLimits.x, maxAngleLimits.x);
-        e.y = Mathf.Clamp(e.y, minAngleLimits.y, maxAngleLimits.y);
-        e.z = Mathf.Clamp(e.z, minAngleLimits.z, maxAngleLimits.z);
+        var clampedPitch = Mathf.Clamp(refPitch + pitchDelta, -89f, 89f);
+        return Quaternion.Euler(clampedPitch, refYaw + yawDelta, 0f) * Vector3.forward;
+    }
 
-        return Quaternion.Euler(e);
+    private static void YawPitch(Vector3 direction, out float yaw, out float pitch)
+    {
+        var n = direction.normalized;
+        yaw = Mathf.Atan2(n.x, n.z) * Mathf.Rad2Deg;
+        pitch = -Mathf.Asin(Mathf.Clamp(n.y, -1f, 1f)) * Mathf.Rad2Deg;
     }
 
     private static Quaternion SmoothDampQuaternion(
@@ -144,10 +148,4 @@ public class BoneLookAt : MonoBehaviour
         return Quaternion.Euler(resultEuler);
     }
 
-    private static float NormalizeAngle(float angle)
-    {
-        while (angle > 180f) angle -= 360f;
-        while (angle < -180f) angle += 360f;
-        return angle;
-    }
 }

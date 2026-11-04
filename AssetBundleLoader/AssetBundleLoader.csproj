@@ -4,14 +4,15 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+        <GameDir Condition="'$(GameDir)' == ''">$(MSBuildThisFileDirectory)..\..\..\</GameDir>
     </PropertyGroup>
 
     <ItemGroup>
       <Reference Include="UnityEngine.AssetBundleModule">
-        <HintPath>..\..\..\EscapeFromTarkov_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+        <HintPath>$(GameDir)EscapeFromTarkov_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine.CoreModule">
-        <HintPath>..\..\..\EscapeFromTarkov_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        <HintPath>$(GameDir)EscapeFromTarkov_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       </Reference>
     </ItemGroup>
 

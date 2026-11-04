@@ -33,12 +33,26 @@ public class SelectAreaPatch : ModulePatch
         {
             var unsubscribe = areaData.LevelUpdated.Subscribe(delegate
             {
-                OnAreaLevelUpdated?.Invoke(areaData);
+                try
+                {
+                    OnAreaLevelUpdated?.Invoke(areaData);
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log!.LogError(ex);
+                }
             });
 
             UnsubscribeActions[areaData] = unsubscribe;
         }
 
-        OnAreaSelected?.Invoke(areaData);
+        try
+        {
+            OnAreaSelected?.Invoke(areaData);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log!.LogError(ex);
+        }
     }
 }

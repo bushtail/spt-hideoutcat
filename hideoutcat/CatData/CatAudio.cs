@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using AssetBundleLoader;
 using Comfort.Common;
@@ -18,6 +19,7 @@ public class CatAudio : MonoBehaviour
     private MaterialType _lastPlayedMaterialType = MaterialType.Concrete; // original default = 5
 
     private AudioClip[]? _allClips;
+    private readonly Dictionary<string, AudioClip[]> _clipsByPrefix = new();
     private BetterSource? _audioSource;
     private CatGraphTraverser? _graphTraverser;
 
@@ -54,6 +56,8 @@ public class CatAudio : MonoBehaviour
 
     private void Update()
     {
+        if (!_audioSource || !_graphTraverser) { return; }
+
         _audioSource!.Position = transform.position;
 
         if (_graphTraverser!.VelocityMagnitude > 0.1f)
@@ -66,6 +70,7 @@ public class CatAudio : MonoBehaviour
             if (_stepTimer >= stepInterval && _graphTraverser.IsMovement())
             {
                 PlayStep();
+                _stepTimer = 0f;
             }
         }
         else
@@ -233,8 +238,12 @@ public class CatAudio : MonoBehaviour
 
     private void PlayRandomClipByPrefix(AudioClip[]? clips, string prefix)
     {
-        if (clips == null) { return; }
-        var matches = Array.FindAll(clips, clip => clip.name.StartsWith(prefix));
+        if (clips == null || !_audioSource) { return; }
+        if (!_clipsByPrefix.TryGetValue(prefix, out var matches))
+        {
+            matches = Array.FindAll(clips, clip => clip.name.StartsWith(prefix, StringComparison.Ordinal));
+            _clipsByPrefix[prefix] = matches;
+        }
 
         if (matches.Length > 0)
         {
