@@ -720,9 +720,18 @@ public class Cat : InteractableObject
             SetState(ECatState.Sitting, true);
         }
     }
-    private static bool IsPlayerShiningFlashlightAtFace()
+    private bool IsPlayerShiningFlashlightAtFace()
     {
-        return CameraManager.Instance != null && CameraManager.Instance.Flashlight && CameraManager.Instance.Flashlight.IsActive;
+        var flashlight = CameraManager.Instance != null ? CameraManager.Instance.Flashlight : null;
+        if (!flashlight || !flashlight!.IsActive) { return false; }
+
+        var cam = GetPlayerCam();
+        if (!cam) { return false; }
+
+        var toCat = transform.position + Vector3.up * 0.2f - cam!.position;
+        if (toCat.sqrMagnitude > 6f * 6f) { return false; }
+
+        return Vector3.Angle(cam.forward, toCat) < 25f;
     }
     
     private bool IsPlayerInTheWay()
