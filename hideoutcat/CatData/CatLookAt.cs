@@ -75,9 +75,8 @@ public class CatLookAt : MonoBehaviour
 
     public void SetLookTarget(Transform? targetLookAt)
     {
-        if (!targetLookAt) { return; }
-
         if (!_constraintNeck) { Init(); }
+        if (!_constraintNeck || !_constraintHead) { return; }
 
         _constraintNeck!.targetLookAt = targetLookAt;
         _constraintHead!.targetLookAt = targetLookAt;
