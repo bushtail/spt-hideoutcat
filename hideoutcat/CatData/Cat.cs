@@ -383,7 +383,6 @@ public class Cat : InteractableObject
 
         _prevState = _currentState;
         _currentState = newState;
-        _owner!.InteractionsChangedHandler();
 
         if (!applyAnimatorParams) { return; }
 
