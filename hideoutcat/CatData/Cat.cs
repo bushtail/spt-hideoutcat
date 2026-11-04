@@ -749,8 +749,7 @@ public class Cat : InteractableObject
     
     private bool IsBusy()
     {
-        var currentState = _currentState;
-        return currentState - ECatState.Sleeping <= 2;
+        return _currentState is ECatState.Sleeping or ECatState.Eating or ECatState.Defecating;
     }
     
     private void GoToRandomArea()
