@@ -60,6 +60,14 @@ public class CatLookAt : MonoBehaviour
         _constraintHead.minAngleLimits = new Vector3(-40f, -HeadYawLimit, -20f);
     }
 
+    private void OnDestroy()
+    {
+        if (_targetLookAtDummy)
+        {
+            Destroy(_targetLookAtDummy!.gameObject);
+        }
+    }
+
     private Transform? PlayerCamera()
     {
         if (!_cameraMain)
