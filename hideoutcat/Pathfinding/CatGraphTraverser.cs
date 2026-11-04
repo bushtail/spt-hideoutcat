@@ -221,7 +221,24 @@ public class CatGraphTraverser : MonoBehaviour
         var turn = angle.RemapClamped(-40f, 40f, -1f, 1f);
         var dist = Vector3.Distance(transform.position, targetPos);
 
-        var thrust = ComputeThrust(node, angle, dist);
+        var forwardJump = node.forwardJump && dist > 0.4f;
+        if (forwardJump || TargetIsAbove(node) || TargetIsBelow(node))
+        {
+            if (forwardJump)
+            {
+                if (Mathf.Abs(angle) < 7f) { StartJump(JumpingForward); }
+            }
+            else if (Mathf.Abs(angle) < 10f)
+            {
+                StartJump(TargetIsAbove(node) ? JumpingUp : JumpingDown);
+            }
+
+            TickMovement(0f, turn);
+            _prevDistToDest = dist;
+            return;
+        }
+
+        var thrust = ComputeThrust(angle, dist);
 
         transform.SetPositionIndividualAxis(
             null,
@@ -241,30 +258,15 @@ public class CatGraphTraverser : MonoBehaviour
         _prevDistToDest = dist;
     }
 
-    private float ComputeThrust(Node node, float angle, float dist)
+    private void StartJump(int jumpParam)
+    {
+        _animator!.SetBool(jumpParam, true);
+        _animator.Update(0f);
+    }
+
+    private float ComputeThrust(float angle, float dist)
     {
         var thrust = 1f;
-
-        if (node.forwardJump && dist > 0.4f && Mathf.Abs(angle) < 7f)
-        {
-            _animator!.SetBool(JumpingForward, true);
-            _animator.Update(0f);
-            return 0f;
-        }
-
-        if (TargetIsAbove(node, angle))
-        {
-            _animator!.SetBool(JumpingUp, true);
-            _animator.Update(0f);
-            return 0f;
-        }
-
-        if (TargetIsBelow(node, angle))
-        {
-            _animator!.SetBool(JumpingDown, true);
-            _animator.Update(0f);
-            return 0f;
-        }
 
         if (Mathf.Abs(angle) > 20f && dist < 0.5f)
             return 0f;
@@ -307,14 +309,14 @@ public class CatGraphTraverser : MonoBehaviour
         return thrust;
     }
 
-    private bool TargetIsAbove(Node node, float angle)
+    private bool TargetIsAbove(Node node)
     {
-        return node.position.y > transform.position.y + 0.3f && Mathf.Abs(angle) < 10f;
+        return node.position.y > transform.position.y + 0.3f;
     }
 
-    private bool TargetIsBelow(Node node, float angle)
+    private bool TargetIsBelow(Node node)
     {
-        return node.position.y < transform.position.y - 0.3f && Mathf.Abs(angle) < 10f;
+        return node.position.y < transform.position.y - 0.3f;
     }
 
     public bool IsMovement()
