@@ -9,6 +9,9 @@ public class CatLookAt : MonoBehaviour
     private const string NeckPath = "RootNode/Arm_Cat/Skeleton/root_bone_01/Spine_base_02/spine_02_03/spine_03_04/spine_04_05/spine_05_06/neck_07";
     private const string HeadPath = NeckPath + "/head_08";
 
+    private const float NeckYawLimit = 45f;
+    private const float HeadYawLimit = 45f;
+
     private Camera? _cameraMain;
     private Transform? _targetLookAtDummy;
 
@@ -44,8 +47,8 @@ public class CatLookAt : MonoBehaviour
         _constraintNeck.RotationOffsetEuler = new Vector3(-15f, 0f, 0f);
         _constraintNeck.customUpVector = Vector3.up;
         _constraintNeck.useAngleLimits = true;
-        _constraintNeck.maxAngleLimits = new Vector3(80f, 20f, 20f);
-        _constraintNeck.minAngleLimits = new Vector3(-50f, -20f, -20f);
+        _constraintNeck.maxAngleLimits = new Vector3(80f, NeckYawLimit, 20f);
+        _constraintNeck.minAngleLimits = new Vector3(-50f, -NeckYawLimit, -20f);
 
         _constraintHead = gameObject.AddComponent<BoneLookAt>();
         _constraintHead.bone = head;
@@ -53,8 +56,8 @@ public class CatLookAt : MonoBehaviour
         _constraintHead.RotationOffsetEuler = new Vector3(-15f, 0f, 0f);
         _constraintHead.customUpVector = Vector3.up;
         _constraintHead.useAngleLimits = true;
-        _constraintHead.maxAngleLimits = new Vector3(80f, 20f, 20f);
-        _constraintHead.minAngleLimits = new Vector3(-40f, -20f, -20f);
+        _constraintHead.maxAngleLimits = new Vector3(80f, HeadYawLimit, 20f);
+        _constraintHead.minAngleLimits = new Vector3(-40f, -HeadYawLimit, -20f);
     }
 
     private Transform? PlayerCamera()
