@@ -374,8 +374,7 @@ public class Cat : InteractableObject
     
     public bool IsPettable()
     {
-        var currentState = _currentState;
-        return currentState == ECatState.Idle || currentState - ECatState.Sitting <= 1;
+        return _currentState is ECatState.Idle or ECatState.Sitting or ECatState.Lying;
     }
     
     private void SetState(ECatState newState, bool applyAnimatorParams)
