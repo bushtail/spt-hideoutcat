@@ -28,8 +28,8 @@ public class CatGraphTraverser : MonoBehaviour
     private float _prevDistToDest;
     private float _jumpUpEndOffset = -0.5f;
 
-    private Vector3 Velocity { get; set; }
-    public float VelocityMagnitude => Velocity.magnitude / Time.deltaTime;
+    private float _speed;
+    public float VelocityMagnitude => _speed;
     public float DeltaY { get; private set; }
 
     private static Graph? PathfindingGraph => Plugin.CatGraph;
@@ -127,7 +127,12 @@ public class CatGraphTraverser : MonoBehaviour
 
     private void LateUpdate()
     {
-        Velocity = transform.position - _prevPos;
+        var dt = Time.deltaTime;
+        if (dt > 0f)
+        {
+            var frameSpeed = (transform.position - _prevPos).magnitude / dt;
+            _speed = Mathf.Lerp(_speed, frameSpeed, 1f - Mathf.Exp(-10f * dt));
+        }
         _prevPos = transform.position;
 
         if (currentPath == null || currentPath.Count == 0)
@@ -221,7 +226,24 @@ public class CatGraphTraverser : MonoBehaviour
         var turn = angle.RemapClamped(-40f, 40f, -1f, 1f);
         var dist = Vector3.Distance(transform.position, targetPos);
 
-        var thrust = ComputeThrust(node, angle, dist);
+        var forwardJump = node.forwardJump && dist > 0.4f;
+        if (forwardJump || TargetIsAbove(node) || TargetIsBelow(node))
+        {
+            if (forwardJump)
+            {
+                if (Mathf.Abs(angle) < 7f) { StartJump(JumpingForward); }
+            }
+            else if (Mathf.Abs(angle) < 10f)
+            {
+                StartJump(TargetIsAbove(node) ? JumpingUp : JumpingDown);
+            }
+
+            TickMovement(0f, turn);
+            _prevDistToDest = dist;
+            return;
+        }
+
+        var thrust = ComputeThrust(angle, dist);
 
         transform.SetPositionIndividualAxis(
             null,
@@ -241,80 +263,44 @@ public class CatGraphTraverser : MonoBehaviour
         _prevDistToDest = dist;
     }
 
-    private float ComputeThrust(Node node, float angle, float dist)
+    private void StartJump(int jumpParam)
     {
-        var thrust = 1f;
+        _animator!.SetBool(jumpParam, true);
+        _animator.Update(0f);
+    }
 
-        if (node.forwardJump && dist > 0.4f && Mathf.Abs(angle) < 7f)
-        {
-            _animator!.SetBool(JumpingForward, true);
-            _animator.Update(0f);
-            return 0f;
-        }
-
-        if (TargetIsAbove(node, angle))
-        {
-            _animator!.SetBool(JumpingUp, true);
-            _animator.Update(0f);
-            return 0f;
-        }
-
-        if (TargetIsBelow(node, angle))
-        {
-            _animator!.SetBool(JumpingDown, true);
-            _animator.Update(0f);
-            return 0f;
-        }
-
+    private float ComputeThrust(float angle, float dist)
+    {
         if (Mathf.Abs(angle) > 20f && dist < 0.5f)
             return 0f;
 
-        if (!(Mathf.Abs(angle) < 30f)) { return thrust; }
+        var thrust = 1f;
+
+        if (Mathf.Abs(angle) >= 30f) { return thrust; }
 
         for (var i = _currentPathIndex; i < currentPath!.Count; i++)
         {
             var distance = Vector3.Distance(transform.position, currentPath[i].position);
 
-            switch (distance)
-            {
-                case <= 3f:
-                {
-                    thrust = Mathf.Max(thrust, 1f);
-                    break;
-                }
-                case <= 6f:
-                {
-                    thrust = Mathf.Max(thrust, 1.66f);
-                    break;
-                }
-                case <= 8f:
-                {
-                    thrust = Mathf.Max(thrust, 2.55f);
-                    break;
-                }
-                default:
-                {
-                    if (Mathf.Abs(angle) < 5f)
-                    {
-                        thrust = Mathf.Max(thrust, 3.6f);
-                    }
-
-                    break;
-                }
-            }
+            if (distance > 8f && Mathf.Abs(angle) < 5f)
+                thrust = Mathf.Max(thrust, 3.6f);
+            else if (distance > 6f)
+                thrust = Mathf.Max(thrust, 2.55f);
+            else if (distance > 3f)
+                thrust = Mathf.Max(thrust, 1.66f);
         }
 
         return thrust;
     }
 
-    private bool TargetIsAbove(Node node, float angle)
+    private bool TargetIsAbove(Node node)
     {
-        return node.position.y > transform.position.y + 0.3f && Mathf.Abs(angle) < 10f;
+        return node.position.y > transform.position.y + 0.3f;
     }
 
-    private bool TargetIsBelow(Node node, float angle)
+    private bool TargetIsBelow(Node node)
     {
-        return node.position.y < transform.position.y - 0.3f && Mathf.Abs(angle) < 10f;
+        return node.position.y < transform.position.y - 0.3f;
     }
 
     public bool IsMovement()

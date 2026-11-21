@@ -18,6 +18,13 @@ public class HideoutAwakePatch : ModulePatch
     [PatchPostfix]
     private static void Postfix(HideoutController __instance)
     {
-        OnHideoutAwake!.Invoke();
+        try
+        {
+            OnHideoutAwake?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log!.LogError(ex);
+        }
     }
 }

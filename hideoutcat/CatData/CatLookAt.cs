@@ -6,17 +6,17 @@ namespace HideoutCat.CatData;
 
 public class CatLookAt : MonoBehaviour
 {
+    private const string NeckPath = "RootNode/Arm_Cat/Skeleton/root_bone_01/Spine_base_02/spine_02_03/spine_03_04/spine_04_05/spine_05_06/neck_07";
+    private const string HeadPath = NeckPath + "/head_08";
+
+    private const float NeckYawLimit = 45f;
+    private const float HeadYawLimit = 45f;
+
     private Camera? _cameraMain;
     private Transform? _targetLookAtDummy;
 
     private BoneLookAt? _constraintHead;
     private BoneLookAt? _constraintNeck;
-
-    private Transform? _transformHead;
-    private Transform? _transformNeck;
-
-    private BoneLookAt? _boneLookAtNeck;
-    private BoneLookAt? _boneLookAtHead;
 
     [UsedImplicitly]
     public bool Tracking =>
@@ -25,59 +25,74 @@ public class CatLookAt : MonoBehaviour
 
     private void Start()
     {
-        _boneLookAtHead = gameObject.AddComponent<BoneLookAt>();
-        _boneLookAtNeck = gameObject.AddComponent<BoneLookAt>();
-
-        _transformNeck = transform.Find("RootNode/Arm_Cat/Skeleton/root_bone_01/Spine_base_02/spine_02_03/spine_03_04/spine_04_05/spine_05_06/neck_07");
-        _transformHead = transform.Find("RootNode/Arm_Cat/Skeleton/root_bone_01/Spine_base_02/spine_02_03/spine_03_04/spine_04_05/spine_05_06/neck_07/head_08");
-        
-        _cameraMain = Camera.main;
+        Init();
     }
 
     private void Init()
     {
-        if (!_transformHead)
+        if (_constraintNeck) { return; }
+
+        var neck = transform.Find(NeckPath);
+        var head = transform.Find(HeadPath);
+
+        if (!neck || !head)
         {
             Plugin.Log!.LogError("Error init CatLookAt! Can't find armature bone");
             return;
         }
 
-        _constraintNeck = _boneLookAtNeck;
-        _constraintNeck!.bone = _transformNeck;
+        _constraintNeck = gameObject.AddComponent<BoneLookAt>();
+        _constraintNeck.bone = neck;
         _constraintNeck.weight = 0.6f;
         _constraintNeck.RotationOffsetEuler = new Vector3(-15f, 0f, 0f);
-        _constraintNeck.customUpVector = Vector3.up;
+        _constraintNeck.customUpVector = Vector3.zero;
         _constraintNeck.useAngleLimits = true;
-        _constraintNeck.maxAngleLimits = new Vector3(80f, 20f, 20f);
-        _constraintNeck.minAngleLimits = new Vector3(-50f, -20f, -20f);
+        _constraintNeck.maxAngleLimits = new Vector3(80f, NeckYawLimit, 20f);
+        _constraintNeck.minAngleLimits = new Vector3(-50f, -NeckYawLimit, -20f);
 
-        _constraintHead = _boneLookAtHead;
-        _constraintHead!.bone = _transformHead;
+        _constraintHead = gameObject.AddComponent<BoneLookAt>();
+        _constraintHead.bone = head;
         _constraintHead.weight = 1f;
         _constraintHead.RotationOffsetEuler = new Vector3(-15f, 0f, 0f);
-        _constraintHead.customUpVector = Vector3.up;
+        _constraintHead.customUpVector = Vector3.zero;
         _constraintHead.useAngleLimits = true;
-        _constraintHead.maxAngleLimits = new Vector3(80f, 20f, 20f);
-        _constraintHead.minAngleLimits = new Vector3(-40f, -20f, -20f);
+        _constraintHead.maxAngleLimits = new Vector3(80f, HeadYawLimit, 20f);
+        _constraintHead.minAngleLimits = new Vector3(-40f, -HeadYawLimit, -20f);
+    }
+
+    private void OnDestroy()
+    {
+        if (_targetLookAtDummy)
+        {
+            Destroy(_targetLookAtDummy!.gameObject);
+        }
+    }
+
+    private Transform? PlayerCamera()
+    {
+        if (!_cameraMain)
+        {
+            _cameraMain = Camera.main;
+        }
+
+        return _cameraMain ? _cameraMain!.transform : null;
     }
 
     public void LookAt(Vector3 worldPos)
     {
-        if (!_constraintNeck) { Init(); }
-
-        if (!_targetLookAtDummy) { _targetLookAtDummy = new GameObject("CatLookTarget").transform; }
+        if (!_targetLookAtDummy)
+        {
+            _targetLookAtDummy = new GameObject("CatLookTarget").transform;
+        }
 
         _targetLookAtDummy!.position = worldPos;
-
-        _constraintNeck!.targetLookAt = _targetLookAtDummy;
-        _constraintHead!.targetLookAt = _targetLookAtDummy;
+        SetLookTarget(_targetLookAtDummy);
     }
 
     public void SetLookTarget(Transform? targetLookAt)
     {
-        if (!targetLookAt) { return; }
-
-        if (!_constraintNeck) { Init(); }
+        Init();
+        if (!_constraintNeck || !_constraintHead) { return; }
 
         _constraintNeck!.targetLookAt = targetLookAt;
         _constraintHead!.targetLookAt = targetLookAt;
@@ -85,16 +100,18 @@ public class CatLookAt : MonoBehaviour
 
     public void SetLookAtPlayer()
     {
-        if (_cameraMain)
+        var cam = PlayerCamera();
+        if (cam)
         {
-            SetLookTarget(_cameraMain!.transform);
+            SetLookTarget(cam);
         }
     }
 
     public bool IsLookingAtPlayer()
     {
-        if (!_constraintNeck || !_cameraMain) { return false; }
+        var cam = PlayerCamera();
+        if (!_constraintNeck || !cam) { return false; }
 
-        return _constraintNeck!.targetLookAt == _cameraMain!.transform;
+        return _constraintNeck!.targetLookAt == cam;
     }
 }
